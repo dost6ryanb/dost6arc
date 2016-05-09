@@ -119,7 +119,7 @@ class Api extends REST_Controller {
 
             $this->load->model('archive_model');
 
-             // SOME TEST
+             // Fetch from archive then merge to a single json response mimicking fmon.asti predict format (see predict_model)
             $o_archives = $this->archive_model->get($dev_id, $limit, $sdate, $edate);
             $o_data_new = new stdClass();
             $o_data_new->data = [];
@@ -167,6 +167,7 @@ class Api extends REST_Controller {
                     echo '"dev_id":"' . $o_device->dev_id . '",';
                     echo '"posx":"' . $o_device->posx . '",';
                     echo '"posy":"' . $o_device->posy . '"';
+                    echo '"type_id":"' . $o_device->type_id . '"';
                     echo '}'; // END JSON PROPERTY
 
                     if ($i < $num_of_devices - 1) { // IF NOT LAST ARRAY, PRINT COMMAS

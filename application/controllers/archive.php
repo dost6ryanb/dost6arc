@@ -75,7 +75,7 @@ public function cron_run_backup_date($sdate=false, $dev_id=false) {
 			$backup_process = $this->__backup($o_device->dev_id, $sdate);// START backup evalutes to false if backup failed
 			$data_count =  $backup_process[0];
 			$data_count_success_insert =  $backup_process[1];
-			if ($data_count >= 0 && $datacount !== null) { 
+			if ($data_count >= 0 && $data_count !== null) { 
 				//sleep(1);
 				$this->__log('.OK (count:'.$data_count.'|inserted:'.$data_count_success_insert.')');
 				$num_of_devices_backup_successfull += 1;
@@ -95,7 +95,7 @@ public function cron_run_backup_date($sdate=false, $dev_id=false) {
 		$this->__log('!Warning: No Device to backup');
 	}
 
-	$this->__log('Process Terminated.');
+	$this->__log('Backup ' . $sdate . ' done. Process Terminated.');
 }
 
 //actual backing up code
@@ -120,22 +120,22 @@ private function __backup($dev_id=false, $sdate=false) {
 	if ($o_json->count >= 0) {
 		if ($o_json->count == 0) {//SPECIAL CASE INSERT BLANK BACKUP
 			$this->archive_model->create($dev_id, $sdate, "", "[]");
-		}
+		} else {
 
-		foreach ($o_json->data as $data) {
-			$dateTimeRead = $data->dateTimeRead;
+			foreach ($o_json->data as $data) {
+				$dateTimeRead = $data->dateTimeRead;
 
-			if (!isset($data->dateTimeRead)) {
-				$dateTimeRead = "";
+				if (!isset($data->dateTimeRead)) {
+					$dateTimeRead = "";
+				}
+
+				$try_backup = $this->archive_model->create($dev_id, $sdate, $dateTimeRead, json_encode($data));
+
+				if ($try_backup) {
+					$success_full_insert += 1;
+				}
 			}
-
-			$try_backup = $this->archive_model->create($dev_id, $sdate, $dateTimeRead, json_encode($data));
-
-			if ($try_backup) {
-				$success_full_insert += 1;
-			}
 		}
-
 		return array($o_json->count, $success_full_insert);
 	} else {
 		return false;
