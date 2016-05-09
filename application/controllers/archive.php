@@ -79,10 +79,8 @@ public function cron_run_backup_date($sdate=false, $dev_id=false) {
 				//sleep(1);
 				$this->__log('.OK (count:'.$data_count.'|inserted:'.$data_count_success_insert.')');
 				$num_of_devices_backup_successfull += 1;
-			} elseif ($data_count === false) {
-				$this->__log('.ERROR invalid device id ');
 			} elseif ($data_count == -1) {
-				$this->__log('.ERROR Cannot reach predict ');
+				$this->__log('.ERROR. 404 Predict');
 			} else {
 				$this->__log('.ERROR');
 			}
@@ -117,31 +115,28 @@ private function __backup($dev_id=false, $sdate=false) {
 	$o_json = $this->predict_model->get_device_data($dev_id, "", $sdate, $sdate);
 	$success_full_insert = 0;
 
-	if ($o_json->count >= 0) {
-		if ($o_json->count == 0) {//SPECIAL CASE INSERT BLANK BACKUP
-			$this->archive_model->create($dev_id, $sdate, "", "[]");
-		} else {
+	if ($o_json->count == 0) {
+		$this->archive_model->create($dev_id, $sdate, "", "[]");
+		return [0, 0];
+	} elseif ($o_json->count >= 0) {
+		foreach ($o_json->data as $data) {
+			$dateTimeRead = $data->dateTimeRead;
 
-			foreach ($o_json->data as $data) {
-				$dateTimeRead = $data->dateTimeRead;
+			if (!isset($data->dateTimeRead)) {
+				$dateTimeRead = "";
+			}
 
-				if (!isset($data->dateTimeRead)) {
-					$dateTimeRead = "";
-				}
+			$try_backup = $this->archive_model->create($dev_id, $sdate, $dateTimeRead, json_encode($data));
 
-				$try_backup = $this->archive_model->create($dev_id, $sdate, $dateTimeRead, json_encode($data));
-
-				if ($try_backup) {
-					$success_full_insert += 1;
-				}
+			if ($try_backup) {
+				$success_full_insert += 1;
 			}
 		}
-		return array($o_json->count, $success_full_insert);
-	} else {
-		return false;
-	}
 
-	return true;
+		return [$o_json->count, $success_full_insert];
+	} else {
+		return $o_json; //SIMILAR to try catch throw. let the caller handle errors
+	}
 }
 
 private function __log($s, $addnewline=true) {

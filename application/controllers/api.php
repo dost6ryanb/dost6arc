@@ -106,7 +106,7 @@ class Api extends REST_Controller {
 
             $limit = $this->post('limit');
             if (!isset($limit) || !is_numeric($limit)) {
-                $limit = false;
+                $limit = 100;
             }
 
             $edate = $this->post('edate');
@@ -121,6 +121,7 @@ class Api extends REST_Controller {
 
              // Fetch from archive then merge to a single json response mimicking fmon.asti predict format (see predict_model)
             $o_archives = $this->archive_model->get($dev_id, $limit, $sdate, $edate);
+
             $o_data_new = new stdClass();
             $o_data_new->data = [];
             $o_data_new->device = [];

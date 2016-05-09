@@ -16,12 +16,16 @@ class Archive_model extends CI_Model {
         ),
         'sdate' => array(
                 'type' => 'VARCHAR(10)'
+        )
+        ,
+        'sdate_sql' => array(
+                'type' =>'DATE',
+                'null' => true
         ),
         'datetimeread' => array(
                 'type' =>'DATETIME',
                 'null' => true
         ),
-
         'data' => array(
                 'type' => 'TEXT'
         ),
@@ -40,10 +44,12 @@ class Archive_model extends CI_Model {
 		if ($this->isexist($dev_id, $sdate, $datetimeread)) {
 			return false;
 		} else {
+			$sdate_sql = $this->_predict_to_mysql_date_str($sdate);
 			$data = array(
 		        'dev_id' => $dev_id,
 		        'sdate' => $sdate,
 		        'datetimeread' => $datetimeread,
+		        'sdate_sql' => $sdate_sql,
 		        'data' => $device_data
 				);
 
@@ -62,9 +68,10 @@ class Archive_model extends CI_Model {
 		return false;
 	}
 
-	public function get($dev_id, $limit=false, $sdate="", $edate="") {
+	public function get($dev_id, $limit, $sdate, $edate) {
 		$this->db->from('archive');
-		$this->db->where(array('dev_id' => $dev_id, 'sdate' => $sdate));
+		$this->db->where('dev_id', $dev_id);
+		$this->db->where("sdate_sql BETWEEN '".  $this->_predict_to_mysql_date_str($sdate). "' AND '". $this->_predict_to_mysql_date_str($edate)."'");
 		
 		$this->db->order_by('datetimeread', 'desc');
 		if (is_numeric($limit)) {
@@ -72,8 +79,11 @@ class Archive_model extends CI_Model {
 		}
 
 		$query = $this->db->get();
-
 		return $query->result();
+	}
+
+	private function _predict_to_mysql_date_str($date) {
+		return \DateTime::createFromFormat('m/d/Y', $date)->format('Y-m-d');
 	}
 
 }
