@@ -71,7 +71,11 @@ class Archive_model extends CI_Model {
 	public function get($dev_id, $limit, $sdate, $edate) {
 		$this->db->from('archive');
 		$this->db->where('dev_id', $dev_id);
-		$this->db->where("sdate_sql BETWEEN '".  $this->_predict_to_mysql_date_str($sdate). "' AND '". $this->_predict_to_mysql_date_str($edate)."'");
+		if ($sdate == $edate) {
+			$this->db->where("sdate", $sdate);
+		} else {
+			$this->db->where("sdate_sql BETWEEN '".  $this->_predict_to_mysql_date_str($sdate). "' AND '". $this->_predict_to_mysql_date_str($edate)."'");
+		}
 		
 		$this->db->order_by('datetimeread', 'desc');
 		if (is_numeric($limit)) {
