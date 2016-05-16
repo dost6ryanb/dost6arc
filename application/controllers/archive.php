@@ -135,7 +135,8 @@ private function __backup($dev_id=false, $sdate=false) {
 
 		return [$o_json->count, $success_full_insert];
 	} else {
-		return $o_json; //SIMILAR to try catch throw. let the caller handle errors
+		//return $o_json; //SIMILAR to try catch throw. let the caller handle errors
+		return [-1, 0];
 	}
 }
 
