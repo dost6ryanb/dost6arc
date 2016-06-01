@@ -27,10 +27,10 @@ class Api extends REST_Controller {
                     .'<li><a href="'. base_url('api/devices') . '">api/devices</a></li>'
                     .'<li><a href="'. base_url('api/devices/dev_id/25') . '">api/devices/dev_id/25</a></li>'
                     .'</ul>'
-                    .'<bold>'.site_url('api/arhive').'</bold>'
+                    .'<bold>'.site_url('api/arhive/latest').'</bold>'
                     .'<ul>'
-                    .'<li><a href="'. base_url('api/arhive') . '">api/arhive</a></li>'
-                    .'<li><a href="'. base_url('api/arhive/dev_id/25') . '">api/arhive/dev_id/25</a></li>'
+                    .'<li><a href="'. base_url('api/arhive/latest') . '">api/arhive</a></li>'
+                    .'<li><a href="'. base_url('api/arhive/latest/dev_id/25') . '">api/arhive/dev_id/25</a></li>'
                     .'</ul>';
 
         }
@@ -121,7 +121,6 @@ class Api extends REST_Controller {
 
              // Fetch from archive then merge to a single json response mimicking fmon.asti predict format (see predict_model)
             $o_archives = $this->archive_model->get($dev_id, $limit, $sdate, $edate);
-
             $o_data_new = new stdClass();
             $o_data_new->data = [];
             $o_data_new->device = [];
@@ -137,6 +136,50 @@ class Api extends REST_Controller {
 
 
             $data['json'] = json_encode($o_data_new);
+            $this->load->view('json_view', $data);
+        }
+
+        public function archive_all_post() {
+
+            $sdate = $this->post('sdate');
+
+            if (!isset($sdate)) {
+               $sdate = (new DateTime())->format('m/d/Y');
+            }
+
+            $this->load->model('archive_model');
+
+            $o_archives = $this->archive_model->get_all($sdate);
+            $num = count($o_archives);
+
+            if ($num > 0) {
+                echo '['; // START JSON ARRAY
+                $buffer = "";
+                for ($i=0;$i<$num;$i++) {
+                    $cur = $o_archives[$i];
+                    $dev_id = $cur->dev_id;
+                    $sdate_sql = $cur->sdate_sql;
+                    $sdate =\DateTime::createFromFormat('Y-m-d',$sdate_sql)->format('m/d/Y');
+                    $metadata = '"dev_id":"' . $dev_id . '", "sdate":"'.$sdate.'",';
+                    $data = $cur->data;
+
+                    $temp = substr_replace($data, $metadata, 1, 0);
+
+                    $buffer .= $temp;
+
+                    if ($i < $num - 1) { // IF NOT LAST ARRAY, PRINT COMMAS
+                        $buffer .= ',';
+                    }
+                }
+                echo $buffer;
+                echo ']'; // END JSON ARRAY
+            } else { // no data
+                echo '[]';
+            }
+            $this->output->set_header('Content-type: application/json');
+            
+            return;
+            $data['json'] = json_encode($o_archives);
             $this->load->view('json_view', $data);
         }
 

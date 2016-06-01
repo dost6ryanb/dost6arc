@@ -13,10 +13,10 @@ class Archive_model extends CI_Model {
 		$fields = array(
         'dev_id' => array(
                 'type' => 'INT'
-        ),
+        )/*,
         'sdate' => array(
                 'type' => 'VARCHAR(10)'
-        )
+        )*/
         ,
         'sdate_sql' => array(
                 'type' =>'DATE',
@@ -36,7 +36,7 @@ class Archive_model extends CI_Model {
 		
 
 		$this->dbforge->create_table('archive', TRUE);
-		$this->db->query('ALTER TABLE archive ADD UNIQUE INDEX (dev_id, sdate, datetimeread)');
+		$this->db->query('ALTER TABLE archive ADD UNIQUE INDEX (dev_id, sdate_sql, datetimeread)');
 
 	}
 
@@ -47,7 +47,7 @@ class Archive_model extends CI_Model {
 			$sdate_sql = $this->_predict_to_mysql_date_str($sdate);
 			$data = array(
 		        'dev_id' => $dev_id,
-		        'sdate' => $sdate,
+		        // 'sdate' => $sdate,
 		        'datetimeread' => $datetimeread,
 		        'sdate_sql' => $sdate_sql,
 		        'data' => $device_data
@@ -71,10 +71,15 @@ class Archive_model extends CI_Model {
 	public function get($dev_id, $limit, $sdate, $edate) {
 		$this->db->from('archive');
 		$this->db->where('dev_id', $dev_id);
-		if ($sdate == $edate) {
-			$this->db->where("sdate", $sdate);
+
+		if ($sdate === $edate || empty($edate)) {
+			// $this->db->where("sdate", $sdate);
+			$sqldate = self::_predict_to_mysql_date_str($sdate);
+			$this->db->where("sdate_sql", $sqldate);
 		} else {
-			$this->db->where("sdate_sql BETWEEN '".  $this->_predict_to_mysql_date_str($sdate). "' AND '". $this->_predict_to_mysql_date_str($edate)."'");
+			$sqlsdate = self::_predict_to_mysql_date_str($sdate);
+			$sqledate = self::_predict_to_mysql_date_str($edate);
+			$this->db->where("sdate_sql BETWEEN '". $sqlsdate. "' AND '". $sqledate."'");
 		}
 		
 		$this->db->order_by('datetimeread', 'desc');
@@ -86,8 +91,39 @@ class Archive_model extends CI_Model {
 		return $query->result();
 	}
 
+	public function get_all($sdate) {
+		$sqldate = self::_predict_to_mysql_date_str($sdate);
+
+		$this->db->select("dev_id, max(datetimeread) as maxdtr")
+				->from('archive')
+				->where('sdate_sql', $sqldate)
+				->group_by('dev_id', 'sdate_sql');
+		$subquery = $this->db->get_compiled_select();
+
+		$this->db->reset_query();
+
+		$this->db->select("*")
+				->from('archive as a')
+				->where('a.sdate_sql', $sqldate)
+				->where('a.datetimeread <>', "0000-00-00 00:00:00")
+				->join("($subquery) as b" , 'a.dev_id = b.dev_id and a.datetimeread = b.maxdtr', 'inner');
+
+		// $query = $this->db->get_compiled_select();
+		// return $query;
+
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 	private function _predict_to_mysql_date_str($date) {
-		return \DateTime::createFromFormat('m/d/Y', $date)->format('Y-m-d');
+		$sqldate = \DateTime::createFromFormat('m/d/Y', $date);
+		if ($sqldate) {
+			return  $sqldate->format('Y-m-d');
+		} else {
+			$now = new \DateTime();
+			return $now->format('Y-m-d');
+		}
+		
 	}
 
 }
