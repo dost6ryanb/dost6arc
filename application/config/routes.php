@@ -59,7 +59,18 @@ $route['translate_uri_dashes'] = TRUE;
 | -------------------------------------------------------------------------
 
 /*/
-//$route['api/rain/(:num)'] = 'api/rain/id/$1'; 
+// PREDICT ONLY
+$route['api/predict/(:any)/(:num)'] = 'api/predict/$1/$2';
+$route['api/predict/(:any)'] = 'api/predict/$1';
+$route['api/predict'] = 'api/predict';
 
+// res/:id -> res/:id
+$route['api/([a-z]+)/(:any)'] = 'api/$1/index/$2'; 
+
+// res/ -> res
+$route['api/([a-z]+)'] = 'api/$1'; 
+
+// '/'
+$route['api'] = 'api/index';
 //$route['api/example/users/(:num)'] = 'api/example/users/id/$1'; // Example 4
 //$route['api/example/users/(:num)(\.)([a-zA-Z0-9_-]+)(.*)'] = 'api/example/users/id/$1/format/$3$4'; // Example 8

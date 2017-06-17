@@ -1,8 +1,9 @@
 <?php
 
-require(APPPATH . '/libraries/REST_Controller.php');
+require(APPPATH . 'libraries/REST_Controller.php');
+use Restserver\Libraries\REST_Controller;
 
-class Api extends REST_Controller {
+class Index extends REST_Controller {
 
 
 		public function __construct()
@@ -27,70 +28,15 @@ class Api extends REST_Controller {
                     .'<li><a href="'. base_url('api/devices') . '">api/devices</a></li>'
                     .'<li><a href="'. base_url('api/devices/dev_id/25') . '">api/devices/dev_id/25</a></li>'
                     .'</ul>'
-                    .'<bold>'.site_url('api/arhive/latest').'</bold>'
+                    .'<bold>'.site_url('api/archive/latest').'</bold>'
                     .'<ul>'
-                    .'<li><a href="'. base_url('api/arhive/latest') . '">api/arhive</a></li>'
-                    .'<li><a href="'. base_url('api/arhive/latest/dev_id/25') . '">api/arhive/dev_id/25</a></li>'
+                    .'<li><a href="'. base_url('api/archive/latest') . '">api/archive</a></li>'
+                    .'<li><a href="'. base_url('api/archive/latest/dev_id/25') . '">api/archive/dev_id/25</a></li>'
                     .'</ul>';
 
         }
 
-        //accessible thru POST, proxy to http://fmon.asti.dost.gov.ph/weather/home/index.php/device/getData/
-        //USES class predict_model, function get_device_data
-        public function predict_post() {
-            $dev_id = $this->post('dev_id');
-            if (!isset($dev_id) || !is_numeric($dev_id)) {
-                //redirect('api/index');
-                $this->response([
-                    'status' => FALSE,
-                    'error' => 'dev_id required'
-                ], REST_Controller::HTTP_BAD_REQUEST);
-            }
-
-            $limit = $this->post('limit');
-
-            if (!isset($limit) || !is_numeric($limit)) {
-               $limit = 100;
-            } 
-
-            $sdate = $this->post('sdate');
-
-            if (!isset($sdate)) {
-               $sdate = '';
-            } 
-
-            $edate = $this->post('edate');
-
-            if (!isset($edate)) {
-               $edate = $sdate;
-            } 
-
-            $this->load->model('predict_model');
-            // SOME TEST
-            $output = $this->predict_model->get_device_data($dev_id, $limit, $sdate, $edate);
-
-            $data['json'] = $output;
-            //$this->load->view('json_view', $data);
-            $this->set_response($data['json'], REST_Controller::HTTP_OK);
-        }
-
-        public function predict_device_info_get() {
-            $dev_id = $this->get('dev_id');
-            if (!isset($dev_id) || !is_numeric($dev_id)) {
-                //redirect('api/index');
-                $this->response([
-                    'status' => FALSE,
-                    'error' => 'dev_id required'
-                ], REST_Controller::HTTP_BAD_REQUEST);
-            }
-
-            $this->load->model('predict_model');
-            $output = $this->predict_model->get_device_info($dev_id);
-
-            $data['json'] = $output;
-            //$this->load->view('json_view', $data);
-            $this->set_response($data['json'], REST_Controller::HTTP_OK);
-        }
+        
 
         public function archive_post() {
             $dev_id = $this->post('pattern');
@@ -159,7 +105,7 @@ class Api extends REST_Controller {
                     $cur = $o_archives[$i];
                     $dev_id = $cur->dev_id;
                     $sdate_sql = $cur->sdate_sql;
-                    $sdate =\DateTime::createFromFormat('Y-m-d',$sdate_sql)->format('m/d/Y');
+                    $sdate = \DateTime::createFromFormat('Y-m-d',$sdate_sql)->format('m/d/Y');
                     $metadata = '"dev_id":"' . $dev_id . '", "sdate":"'.$sdate.'",';
                     $data = $cur->data;
 

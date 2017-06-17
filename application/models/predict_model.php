@@ -112,25 +112,41 @@ class Predict_model extends CI_Model {
 	// }
 	private function _get_api_post_output($dev_id, $limit, $sdate, $edate) {
 
-		$url = 'http://fmon.asti.dost.gov.ph/weather/home/index.php/device/getData/';
+		$url = 'http://fmon.asti.dost.gov.ph/api/index.php/device/getData/';
 		$data = array('start' => '0', 'limit' => $limit, 'sDate' => $sdate, 'eDate' => $edate, 'pattern' => $dev_id);
 
-		$options = array(
-			'http' => array(
-				'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-				'method'  => 'POST',
-				'content' => http_build_query($data),
-				// 'proxy' => 'tcp://127.0.0.1:8888'
-				),
-		);
+		// $options = array(
+		// 	'http' => array(
+		// 		'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+		// 		'method'  => 'POST',
+		// 		'content' => http_build_query($data),
+		// 		// 'proxy' => 'tcp://127.0.0.1:8888'
+		// 		),
+		// );
 
-		$context  = stream_context_create($options);
-		$result = @file_get_contents($url, false, $context);
+		// $context  = stream_context_create($options);
+		// $result = @file_get_contents($url, false, $context);
 
-		if ($result == FALSE) {
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+		// execute!
+		$response = curl_exec($ch);
+
+		// close the connection, release resources used
+		curl_close($ch);
+
+		// if ($result == FALSE) {
+		// 	return $this->_generate_error_json($dev_id, self::ERROR_PREDICT_404);
+		// } else {
+		// 	return $result;
+		// }
+
+		if ($response == FALSE) {
 			return $this->_generate_error_json($dev_id, self::ERROR_PREDICT_404);
 		} else {
-			return $result;
+			return $response;
 		}
 	}
 

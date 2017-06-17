@@ -1,0 +1,72 @@
+http://192.168.1.20/dost6arc/api
+
+###
+
+http://192.168.1.20/dost6arc/api/predict
+
+###
+GET http://192.168.1.20/dost6arc/api/predict/device/27
+
+###
+
+GET http://192.168.1.20/dost6arc/api/predict/device.xml/27
+
+###
+POST http://192.168.1.20/dost6arc/api/predict/getData HTTP/1.1
+content-type: application/json
+
+{
+    "dev_id": "2023",
+    "sdate":"03/29/2017"
+}
+
+###
+
+GET http://192.168.1.20/dost6arc/api/devices HTTP/1.1
+
+###
+
+GET http://192.168.1.20/dost6arc/api/devices?dev_id=27
+###
+GET http://192.168.1.20/dost6arc/api/data/latest/27
+###
+GET http://192.168.1.20/dost6arc/api/data/latest/27?limit=3
+###
+GET http://192.168.1.20/dost6arc/api/data/27/25-06-2016
+###
+GET http://192.168.1.20/dost6arc/api/data/27/25-06-2016?limit=2
+###
+GET http://192.168.1.20/dost6arc/api/data/27/01-01-2016/15-01-2016
+###
+GET http://192.168.1.20/dost6arc/api/data/27/01-01-2016/15-01-2016?limit=2
+###
+GET http://192.168.1.20/dost6arc/api/data/all_last/01-01-2017
+###
+GET http://192.168.1.20/dost6arc/api/data/27/10-01-2016?summary=lastdata
+###
+GET http://192.168.1.20/dost6arc/api/data/27/10-01-2016?summary=daily
+###
+GET http://192.168.1.20/dost6arc/api/data/27/10-01-2016/15-01-2016?summary=lastdata
+###
+GET http://192.168.1.20/dost6arc/api/data/27/10-01-2016/15-01-2016?summary=daily
+###
+//GOOD DATA SAMPLE
+GET http://192.168.1.20/dost6arc/api/data/27/14-01-2016?summary=daily
+###
+GET http://192.168.1.20/dost6arc/api/data/27/14-01-2016?summary=lastdata
+###
+//NO DATA but with archive SAMPLE 
+GET http://192.168.1.20/dost6arc/api/data/27/04-10-2016?summary=daily
+###
+GET http://192.168.1.20/dost6arc/api/data/27/04-10-2016?summary=lastdata
+###
+//NO archive sample
+GET http://192.168.1.20/dost6arc/api/data/27/11-11-2016?summary=daily
+###
+GET http://192.168.1.20/dost6arc/api/data/27/20-09-2016/25-09-2016?summary=lastdata
+###
+GET http://192.168.1.20/dost6arc/api/data/27/01-01-2016/31-12-2016?summary=lastdata
+###
+GET http://192.168.1.20/dost6arc/api/data/27/01-01-2016/31-12-2016?summary=daily
+###
+GET http://192.168.1.20/dost6arc/api/data/27/01-01-2016/31-12-2016?summary=monthly
