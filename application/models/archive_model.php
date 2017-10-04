@@ -101,18 +101,24 @@ class Archive_model extends CI_Model
     }
 
     //GET daily data for the specific dev_id and start date to end date
-    public function get($dev_id, $sdate, $edate, $limit, $summary = false)
+    public function get($dev_id, $sdate, $edate, $limit = false, $summary = false)
     {
         $this->db->from($this->tableName);
         $this->db->where('dev_id', $dev_id);
 
-        if ($sdate === $edate || empty($edate)) {
-            // $this->db->where("sdate", $sdate);
-            $sqldate_str = self::to_mysql_date_str($sdate);
-            $this->db->where("sdate_sql", $sqldate_str);
-        } else {
-            $sqlsdate_str = self::to_mysql_date_str($sdate);
+        $sqlsdate_str = self::to_mysql_date_str($sdate);
+        $sqledate_str;
+        if ($edate) {
             $sqledate_str = self::to_mysql_date_str($edate);
+        } else {
+            $sqledate_str = $sqlsdate_str;
+        }
+        
+
+        if ($sqlsdate_str == $sqledate_str) {
+            // $this->db->where("sdate", $sdate);
+            $this->db->where("sdate_sql", $sqlsdate_str);
+        } else {
             $this->db->where("sdate_sql BETWEEN '". $sqlsdate_str. "' AND '". $sqledate_str."'");
         }
         
@@ -374,7 +380,7 @@ class Archive_model extends CI_Model
     private function to_mysql_date_str($date)
     {
         if ($date) {
-            return  $date->format('Y-m-d');
+            return $date->format('Y-m-d');
         } else {
             $now = new \DateTime();
             return $now->format('Y-m-d');

@@ -394,16 +394,18 @@ class Archive extends CI_Controller
             $sdate = date('m/d/Y');
         }
 
-        $sdate = DateTime::createFromFormat('m/d/Y', $sdate)->format('Y-m-d');
+        //$sdate = DateTime::createFromFormat('m/d/Y', $sdate)->format('Y-m-d');
+        $sdate = DateTime::createFromFormat('m/d/Y', $sdate);
 
         if ($edate == false) {
             $edate = $sdate;
         }
 
-        $edate = DateTime::createFromFormat('m/d/Y', $edate)->format('Y-m-d');
+        //$edate = DateTime::createFromFormat('m/d/Y', $edate)->format('Y-m-d');
+        $edate = DateTime::createFromFormat('m/d/Y', $edate);
 
         $this->load->model('archives_model');
-        $sdata = $this->archives_model->GetData($dev_id, $sdate, $edate);
+        $sdata = $this->archives_model->get($dev_id, $sdate, $edate);
 
         if ($sdata) {
             print($sdata);
