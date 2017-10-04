@@ -111,9 +111,77 @@ class Data extends REST_Controller
             'data'=>$model,
             'count'=>count($model)
         );
+
         $this->response($output, 200);
     }
 
+    public function csv_get($dev_id = false, $sdate_str = false, $edate_str = false)
+    {
+        if (($dev_id === false) || !is_numeric($dev_id)) {
+            $this->response([
+            'success' => false,
+            'error_message' => 'dev_id required'
+            ], REST_Controller::HTTP_BAD_REQUEST);
+            return;
+        }
+        if (($sdate_str === false)) {
+            $this->response([
+            'success' => false,
+            'error_message' => 'sdate required'
+            ], REST_Controller::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        $sdate;
+        try {
+             $sdate = new \DateTime($sdate_str);
+        } catch (Exception $e) {
+            $this->response([
+            'success' => false,
+            'error_message' => $e->getMessage()
+            ], REST_Controller::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        $edate;
+        if ($edate_str === false) {
+            $edate = false;
+        } else {
+            try {
+                $edate = new \DateTime($edate_str);
+            } catch (Exception $e) {
+                $this->response([
+                'success' => false,
+                'error_message' => $e->getMessage()
+                ], REST_Controller::HTTP_BAD_REQUEST);
+                return;
+            }
+        }
+        
+
+        $limit = $this->get('limit');
+        $summary = $this->get('summary');
+        
+        $this->load->model('archive_model');
+        $model = $this->archive_model->get($dev_id, $sdate, $edate, $limit, $summary);
+
+        $output = $model;
+        $stream = fopen('php://output', 'w');
+        for ($i=0;$i<count($output);++$i) {
+            $dis = get_object_vars($output[$i]);
+            if ($i == 0) {
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename='."$dev_id-$sdate_str-$edate_str".'.csv');
+                $tis = array_keys($dis);
+
+                fputcsv($stream, $tis);
+            }
+            fputcsv($stream, $dis);
+        }
+
+    }
+
+    
     public function latest_get($dev_id = false)
     {
         if (($dev_id === false) || !is_numeric($dev_id)) {
@@ -166,6 +234,39 @@ class Data extends REST_Controller
         $output = array(
             'data'=>$model,
             'count'=>count($model)
+        );
+        $this->response($output, 200);
+    }
+
+    public function index_post()
+    {
+        $dev_id = $this->input->post('pattern');
+        $sdate = $this->input->post('sdate');
+        $edate = $this->input->post('edate');
+        $limit = $this->input->post('limit');
+
+        if ($dev_id == false) {
+            return;
+        }
+        if ($sdate == NULL) {
+            $sdate = new \DateTime('NOW');
+        } else {
+            $sdate = DateTime::createFromFormat('m/d/Y', $sdate);
+        }
+
+        if ($edate == NULL) {
+            $edate = $sdate;
+        } else {
+            $edate = DateTime::createFromFormat('m/d/Y', $edate);
+        }
+
+        $this->load->model('archive_model');
+        $model = $this->archive_model->get($dev_id, $sdate, $edate, $limit);
+
+        $output = array(
+            'data'=>$model,
+            'count'=>count($model),
+            'device'=>[array('dev_id' => $dev_id)]
         );
         $this->response($output, 200);
     }
