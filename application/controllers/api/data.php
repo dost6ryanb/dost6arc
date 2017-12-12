@@ -168,17 +168,20 @@ class Data extends REST_Controller
         $output = $model;
         $stream = fopen('php://output', 'w');
         for ($i=0;$i<count($output);++$i) {
-            $dis = get_object_vars($output[$i]);
-            if ($i == 0) {
-                header('Content-Type: text/csv; charset=utf-8');
-                header('Content-Disposition: attachment; filename='."$dev_id-$sdate_str-$edate_str".'.csv');
-                $tis = array_keys($dis);
+            $line = $output[$i];
+            if (!empty($line)) {
+                $dis = get_object_vars($line);
 
-                fputcsv($stream, $tis);
+                if ($i == 0) {
+                    header('Content-Type: text/csv; charset=utf-8');
+                    header('Content-Disposition: attachment; filename=' . "$dev_id-$sdate_str-$edate_str" . '.csv');
+                    $tis = array_keys($dis);
+
+                    fputcsv($stream, $tis);
+                }
+                fputcsv($stream, $dis);
             }
-            fputcsv($stream, $dis);
         }
-
     }
 
     

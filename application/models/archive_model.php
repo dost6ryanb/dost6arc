@@ -365,16 +365,18 @@ class Archive_model extends CI_Model
             $b[] = $json;
         } else {
             //return something useful when $json is empty like a date or something
-            $b[] = array("dateTimeRead" => $date);
+            $obj = new stdClass();
+            $obj->dateTimeRead = $date;
+            $b[] = $obj;
         }
     }
 
     private function writetobuffer_rain(& $b, $date, $rain)
     {
-        $b[] = array(
-            "date" => $date,
-            'total_rain' => round($rain, 2)
-        );
+        $obj = new stdClass();
+        $obj->date = $date;
+        $obj->total_rain = round($rain, 2);
+        $b[] = $obj;
     }
 
     private function to_mysql_date_str($date)
