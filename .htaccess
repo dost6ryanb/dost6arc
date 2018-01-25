@@ -1,5 +1,4 @@
 RewriteEngine On
-RewriteBase /dost6arc
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
